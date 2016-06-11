@@ -1,0 +1,65 @@
+     1 00000000 E90E000000              jmp near start
+     2                                  
+     3 00000005 312B322B332B2E2E2E-     message db '1+2+3+...+100='   ;数据声明方式基本兼容masm
+     4 0000000E 2B3130303D         
+     5                                  
+     6                                  start:
+     7                                  
+     8 00000013 66B8C007                        mov ax,0x7c0          ;设置加载的数据段地址 
+     9 00000017 8ED8                            mov ds,ax
+    10                                  
+    11 00000019 66B800B8                        mov ax,0xb800         ;设置显示的段地址
+    12 0000001D 8EC0                            mov es,ax
+    13                                  
+    14 0000001F 66BE[0500]                      mov si,message        ;设置偏移量
+    15          ******************       error: COFF format does not support non-32-bit relocations
+    16 00000023 66BF0000                        mov di,0 
+    17 00000027 66B90E00                        mov cx,start-message
+    18                                  
+    19                                      @g:
+    20 0000002B 678A04                          mov al,[si]              ;打印函数
+    21 0000002E 26678805                        mov [es:di],al
+    22 00000032 6647                            inc di
+    23 00000034 2667C60507                      mov byte [es:di],0x07
+    24 00000039 6647                            inc di
+    25 0000003B 6646                            inc si
+    26 0000003D E2EC                            loop @g
+    27                                  
+    28 0000003F 6631C0                          xor ax,ax
+    29 00000042 66B90100                        mov cx,1
+    30                                      @f:
+    31 00000046 6601C8                          add ax,cx             ;计算高斯数列
+    32 00000049 6641                            inc cx
+    33 0000004B 6683F964                        cmp cx,100
+    34 0000004F 7EF5                            jle @f
+    35                                  
+    36 00000051 6631C9                          xor cx,cx             
+    37 00000054 8ED1                            mov ss,cx
+    38 00000056 6689CC                          mov sp,cx
+    39                                  
+    40 00000059 66BB0A00                        mov bx,10             
+    41 0000005D 6631C9                          xor cx,cx
+    42                                  
+    43                                      @d:
+    44 00000060 6641                            inc cx      ;计算每个数位转化成ASCII码，并且入栈
+    45 00000062 6631D2                          xor dx,dx
+    46 00000065 66F7F3                          div bx
+    47 00000068 80CA30                          or dl ,0x30
+    48 0000006B 6652                            push dx
+    49 0000006D 6683F800                        cmp ax,0
+    50 00000071 75ED                            jne @d
+    51                                  
+    52                                      @a:
+    53 00000073 665A                            pop dx      ;显示每个数位
+    54 00000075 26678815                        mov [es:di],dl
+    55 00000079 6647                            inc di
+    56 0000007B 2667C60507                      mov byte [es:di],0x07
+    57 00000080 6647                            inc di
+    58 00000082 E2EF                            loop @a
+    59                                  
+    60 00000084 E9FBFFFFFF                      jmp near $         ;死循环
+    61                                  
+    62 00000089 00<rept>                times 510-($-$$) db 0      ;$当行，$$当节
+    63 000001FE 55AA                                     db 0x55,0xaa   ;设置最后的
+    64                                  
+    65                                  
